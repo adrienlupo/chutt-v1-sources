@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chutt — Périmètre V1 : ce qu'on affiche / ce qu'on n'affiche pas</title>
+<style>
+  :root{
+    --ok:#16a34a; --no:#dc2626; --part:#d97706; --user:#2563eb;
+    --ink:#1a1a1a; --muted:#6b7280;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:#f3f4f6; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;
+  }
+  .wrap{max-width:1240px; margin:0 auto; padding:32px 20px 80px}
+  h1{font-size:26px; margin:0 0 6px}
+  .sub{color:var(--muted); margin:0 0 24px; font-size:15px}
+
+  .legend{
+    display:flex; flex-wrap:wrap; gap:18px; align-items:center;
+    background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+    padding:14px 18px; margin-bottom:14px; font-size:14px;
+  }
+  .legend b{font-weight:600}
+  .key{display:inline-flex; align-items:center; gap:8px}
+  .dot{width:14px; height:14px; border-radius:4px; flex:0 0 auto}
+  .dot.ok{background:var(--ok)} .dot.no{background:var(--no)} .dot.part{background:var(--part)} .dot.user{background:var(--user)}
+
+  .counts{display:flex; gap:10px; flex-wrap:wrap; margin:0 0 26px}
+  .chip{font-size:13px; padding:6px 12px; border-radius:999px; font-weight:600}
+  .chip.ok{background:#dcfce7; color:#166534}
+  .chip.no{background:#fee2e2; color:#991b1b}
+  .chip.part{background:#fef3c7; color:#92400e}
+  .chip.user{background:#dbeafe; color:#1e40af}
+
+  .panel-title{font-size:18px; font-weight:700; margin:34px 0 12px}
+
+  .stage{position:relative; width:100%; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#fff}
+  .stage img{width:100%; display:block}
+
+  /* highlight band over the panel rows */
+  .band{position:absolute; height:2.7%; border-radius:5px; pointer-events:none}
+  .band.ok{background:rgba(22,163,74,.20); box-shadow:inset 4px 0 0 var(--ok)}
+  .band.no{background:rgba(220,38,38,.20); box-shadow:inset 4px 0 0 var(--no)}
+  .band.part{background:rgba(217,119,6,.22); box-shadow:inset 4px 0 0 var(--part)}
+  .band.user{background:rgba(37,99,235,.16); box-shadow:inset 4px 0 0 var(--user)}
+
+  /* source tag floating in the empty map area, to the left of the panel */
+  .tag{position:absolute; transform:translateY(-50%); text-align:right; left:2%; }
+  .pill{
+    display:inline-flex; align-items:center; gap:7px;
+    background:#fff; border:1px solid #e5e7eb;
+    border-radius:999px; padding:4px 11px 4px 9px;
+    font-size:12.5px; box-shadow:0 1px 3px rgba(0,0,0,.10);
+    white-space:nowrap; max-width:100%;
+  }
+  .pill .ico{font-weight:800; font-size:13px; line-height:1}
+  .pill.ok{border-color:#bbf7d0} .pill.ok .ico{color:var(--ok)}
+  .pill.no{border-color:#fecaca} .pill.no .ico{color:var(--no)}
+  .pill.part{border-color:#fde68a} .pill.part .ico{color:var(--part)}
+  .pill.user{border-color:#bfdbfe} .pill.user .ico{color:var(--user)}
+  .pill .src{font-weight:600}
+  .pill .arrow{color:#cbd5e1; font-weight:700}
+  .pill .name{font-weight:600}
+  .pill .chev{color:#cbd5e1; font-weight:700; margin:0 1px}
+  .pill .type{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px;
+    padding:1px 6px; border-radius:5px; background:#eef2f7; color:#475569; white-space:nowrap}
+  .pill .type.api{background:#dbeafe; color:#1e40af}
+  .pill .type.data{background:#d1fae5; color:#065f46}
+  .pill .type.calc{background:#e5e7eb; color:#374151}
+  .pill .type.enc{background:#fef3c7; color:#92400e}
+  .pill .type.saisie{background:#dbeafe; color:#1e40af}
+  .pill .type.none{background:#fee2e2; color:#991b1b}
+  .pill a.link{font-size:11px; color:#2563eb; text-decoration:none; white-space:nowrap}
+  .pill a.link:hover{text-decoration:underline}
+  .pill a.link.enc{color:#b45309}
+
+  .note{font-size:13.5px; color:var(--muted); margin:10px 2px 0}
+  .foot{margin-top:46px; padding:18px 20px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; font-size:14.5px}
+  .foot b{font-weight:600}
+  @media(max-width:760px){ .pill{font-size:10px; padding:3px 7px} .tag{left:1%} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Périmètre V1 — données fiables, sans jointure de parcelles</h1>
+  <p class="sub">Maquette « Conceptualisation » — 12 Bd du Commandant Robert Thollon, Marseille 13015. Pour chaque champ : statut + source réelle.</p>
+
+  <div class="legend">
+    <span class="key"><span class="dot ok"></span><b>On l'a</b> — donnée directe (point / commune) OU calcul dont toutes les entrées sont disponibles</span>
+    <span class="key"><span class="dot part"></span><b>Partiel</b> — une partie seulement, le reste = encodage règlement</span>
+    <span class="key"><span class="dot user"></span><b>Saisie utilisateur</b> — choix de scénario, ce n'est pas une donnée</span>
+    <span class="key"><span class="dot no"></span><b>On ne l'a pas</b> — calcul/algo, encodage règlement, ou aucune source</span>
+  </div>
+  <div class="counts">
+    <span class="chip ok">15 disponibles (donnée ou calcul complet)</span>
+    <span class="chip part">5 partiels / conditionnels</span>
+    <span class="chip user">5 saisies utilisateur</span>
+    <span class="chip no">11 bloqués</span>
+  </div>
+  <p class="note" style="margin:-14px 0 0">Anatomie d'une pastille : <b>statut</b> › <b>nom de la source</b> › <b>type</b> (API · Open data · Téléch. · Calcul · Encodage · Saisie) › <b>lien</b> cliquable.</p>
+
+  <!-- ============ PANEL 1 : FONCIER ============ -->
+  <div class="panel-title">1 · Panneau « Informations foncier »</div>
+  <div class="stage" id="stage-foncier">
+    <img src="foncier.png" alt="Informations foncier">
+  </div>
+  <p class="note">Vert = on a toutes les entrées (donnée brute <b>ou</b> calcul complet, source précisée). Bloc <b>Projet futur</b> : la <b>SDP conservée</b> se calcule déjà ; le reste attend 2 verrous — l'<b>encodage du règlement PLUi</b> (hauteur max, retrait, ratio stationnement) et une <b>source de surface de parking</b>. Les % de programme sont une saisie utilisateur (bleu).</p>
+
+  <!-- ============ PANEL 2 : REGLEMENTATION ============ -->
+  <div class="panel-title">2 · Panneau « Règlementation »</div>
+  <div class="stage" id="stage-reg">
+    <img src="reglementation.png" alt="Règlementation">
+  </div>
+  <p class="note">Bloc <b>Dispositions générales</b> : presque tout via GPU + Géorisques. Bloc <b>Règles d'urbanisme locales</b> : encodage du règlement PLUi (le point dur), encodé <b>une fois par zone</b>. Exception : la <b>hauteur max</b> est une fonction déterministe de la largeur de voie (BD TOPO) une fois la règle de zone encodée — c'est elle qui débloque la cascade du Projet futur.</p>
+
+  <div class="foot" style="border-left:4px solid var(--part); margin-top:30px">
+    <b>Source de l'encodage — exemple Marseille.</b> Les règles marquées <b>ENCODAGE</b> ne viennent d'aucune API : elles sont transcrites du <b>règlement écrit du PLUi Aix-Marseille-Provence</b> (lien-source en ambre sur les pastilles). Chaîne de provenance :
+    <ol style="margin:8px 0 0; padding-left:20px">
+      <li><b>GPU</b> (apicarto) → renvoie le code de zone (<b>UAe3</b>) + le lien direct vers la pièce écrite du règlement.</li>
+      <li><b>Règlement PLUi MAMP</b>, pièce écrite, zone <b>UAe3</b> — <b>Modification n°3 approuvée le 18/04/2024</b> : c'est le document réellement encodé (hauteur 16/22/25 m selon la voie, retrait, stationnement…).</li>
+      <li><b>Encodage</b> = extraction LLM + validation humaine, une fois par zone, avec le lien GPU ancré sur la page exacte.</li>
+    </ol>
+  </div>
+
+  <div class="foot">
+    <b>En une phrase :</b> la V1 garde « l'Existant foncier + le contexte réglementaire par couches officielles ». Disparaissent intégralement le bloc <b>Projet futur</b> (algo), le bloc <b>Règles d'urbanisme locales</b> (encodage règlement), et 5 champs ponctuels : surface de stationnement, taux d'imperméabilisation, propriétaire particulier, % termites, OPAH/PIG.
+  </div>
+</div>
+
+<script>
+/* top = position verticale du centre de la ligne, en % de la hauteur de l'image */
+const PANEL = { left:63.8, width:27.0 };
+
+/* URLs des sources */
+const CAD='https://apicarto.ign.fr/api/doc/cadastre',
+      BAN='https://api-adresse.data.gouv.fr',
+      GEO='https://geo.api.gouv.fr',
+      BDNB='https://www.bdnb.io',
+      GPU='https://apicarto.ign.fr/api/doc/gpu',
+      RISK='https://www.georisques.gouv.fr/doc-api',
+      BDTOPO='https://geoservices.ign.fr/bdtopo',
+      DGFIP='https://www.data.gouv.fr/datasets/fichiers-des-locaux-et-des-parcelles-des-personnes-morales',
+      PLUI='https://plui.ampmetropole.fr',
+      QPV='https://www.data.gouv.fr/datasets/quartiers-prioritaires-de-la-politique-de-la-ville-qpv',
+      ABC='https://www.data.gouv.fr/datasets/liste-des-communes-selon-le-zonage-abc',
+      SRU='https://www.data.gouv.fr/datasets/communes-et-inventaire-sru';
+
+/* Source réellement encodée (exemple Marseille) : règlement écrit du PLUi MAMP, zone UAe3 */
+const ENC = { url: PLUI, label: 'Règlement PLUi MAMP (UAe3)' };
+
+const foncier = [
+  // --- Existant ---
+  {top:29.2, st:'ok',   name:'API Géo (commune INSEE)',            type:'API',           url:GEO},
+  {top:32.2, st:'ok',   name:'API Carto Cadastre',                 type:'API',           url:CAD},
+  {top:35.2, st:'ok',   name:'API Adresse (BAN)',                  type:'API',           url:BAN},
+  {top:38.2, st:'ok',   name:'API Carto Cadastre',                 type:'API',           url:CAD},
+  {top:41.2, st:'ok',   name:'BDNB (CSTB)',                        type:'Open data',     url:BDNB},
+  {top:44.2, st:'no',   name:'Parking non distingué',              type:'Aucune source', url:null},
+  {top:47.2, st:'ok',   name:'Calcul : BD TOPO + OCS GE ÷ parcelle', type:'Calcul',      url:null},
+  {top:50.3, st:'ok',   name:'BDNB (CSTB)',                        type:'Open data',     url:BDNB},
+  {top:53.6, st:'part', name:'DGFiP personnes morales (sociétés seules)', type:'Téléch.', url:DGFIP},
+  // --- Projet futur ---
+  {top:63.6, st:'ok',   name:'Calcul : BDNB + emprise BD TOPO',    type:'Calcul',        url:null},
+  {top:66.6, st:'no',   name:'Hauteur max PLUi requise',           type:'Encodage',      url:null, enc:ENC},
+  {top:69.6, st:'no',   name:'Parking non sourcé',                 type:'Aucune source', url:null},
+  {top:72.6, st:'no',   name:'Hauteur max PLUi requise',           type:'Encodage',      url:null, enc:ENC},
+  {top:75.7, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
+  {top:78.0, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
+  {top:80.3, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
+  {top:82.5, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
+  {top:84.8, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
+  {top:87.8, st:'no',   name:'Cascade SDP + ratio PLUi',           type:'Encodage',      url:null, enc:ENC},
+  {top:90.8, st:'part', name:'Dépend du projet simulé',            type:'Calcul',        url:null},
+];
+
+const reg = [
+  // --- Dispositions générales ---
+  {top:29.1, st:'ok',   name:'API Carto GPU (PEB)',                type:'API',           url:GPU},
+  {top:32.4, st:'ok',   name:'API Géorisques',                     type:'API',           url:RISK},
+  {top:35.7, st:'no',   name:'Pas de taux structuré',              type:'Aucune source', url:null},
+  {top:39.1, st:'ok',   name:'API Géorisques (PPRi)',              type:'API',           url:RISK},
+  {top:42.4, st:'ok',   name:'API Géorisques',                     type:'API',           url:RISK},
+  {top:45.7, st:'ok',   name:'API Carto GPU (SUP)',                type:'API',           url:GPU},
+  // --- Règles d'urbanisme locales ---
+  {top:55.7, st:'part', name:'Largeur de voie + règle de zone',    type:'BD TOPO + Encodage', url:BDTOPO, enc:ENC},
+  {top:58.8, st:'no',   name:'Règlement (COS supprimé 2014)',      type:'Encodage',      url:null, enc:ENC},
+  {top:61.7, st:'no',   name:'Règlement PLUi',                     type:'Encodage',      url:null, enc:ENC},
+  {top:65.3, st:'part', name:'Zone GPU OK · mixité à encoder',     type:'API + Encodage', url:GPU, enc:ENC},
+  {top:69.2, st:'part', name:'SRU OK · 50%/parcelle à encoder',    type:'Open data + Encodage', url:SRU, enc:ENC},
+  {top:72.2, st:'no',   name:'Règlement PLUi',                     type:'Encodage',      url:null, enc:ENC},
+  {top:75.3, st:'no',   name:'Règlement PLUi',                     type:'Encodage',      url:null, enc:ENC},
+  // --- Informations contextuelles ---
+  {top:86.0, st:'ok',   name:'Périmètres QPV (ANCT)',              type:'Open data',     url:QPV},
+  {top:89.3, st:'ok',   name:'Zonage ABC',                         type:'Open data',     url:ABC},
+  {top:92.6, st:'no',   name:'Aucune base OPAH',                   type:'Aucune source', url:null},
+];
+
+const ICON = {ok:'✓', no:'✗', part:'~', user:'✎'};
+
+function typeClass(t){
+  if(/Aucune/i.test(t)) return 'none';
+  if(/Encodage/i.test(t)) return 'enc';
+  if(/Saisie/i.test(t)) return 'saisie';
+  if(/Calcul/i.test(t)) return 'calc';
+  if(/API/i.test(t)) return 'api';
+  return 'data';
+}
+function domain(u){ try{ return new URL(u).hostname.replace(/^www\./,''); }catch(e){ return u; } }
+
+/* fusionne les lignes consécutives identiques (statut + source + type + liens) */
+function keyOf(r){ return [r.st, r.name, r.type, r.url, r.urlLabel||'', r.enc?r.enc.url:''].join('|'); }
+function mergeRows(rows){
+  const groups = [];
+  rows.forEach(r=>{
+    const last = groups[groups.length-1];
+    if(last && last.key===keyOf(r)){
+      last.tops.push(r.top);
+    } else {
+      groups.push({...r, key:keyOf(r), tops:[r.top]});
+    }
+  });
+  return groups;
+}
+
+function render(stageId, rows){
+  const stage = document.getElementById(stageId);
+  mergeRows(rows).forEach(g=>{
+    const min = Math.min(...g.tops), max = Math.max(...g.tops);
+    const center = (min+max)/2;
+
+    const band = document.createElement('div');
+    band.className = 'band '+g.st;
+    band.style.top = (min-1.35)+'%';
+    band.style.height = ((max-min)+2.7)+'%';
+    band.style.left = PANEL.left+'%';
+    band.style.width = PANEL.width+'%';
+    stage.appendChild(band);
+
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.style.top = center+'%';
+    tag.style.right = (100-PANEL.left+0.8)+'%';
+    let html = '<span class="pill '+g.st+'">'+
+        '<span class="ico">'+ICON[g.st]+'</span>'+
+        '<span class="name">'+g.name+'</span>'+
+        '<span class="chev">&rsaquo;</span>'+
+        '<span class="type '+typeClass(g.type)+'">'+g.type+'</span>';
+    if(g.url){
+      html += '<span class="chev">&rsaquo;</span>'+
+              '<a class="link" href="'+g.url+'" target="_blank" rel="noopener">&#8599; '+(g.urlLabel||domain(g.url))+'</a>';
+    }
+    if(g.enc){
+      html += '<span class="chev">&rsaquo;</span>'+
+              '<a class="link enc" href="'+g.enc.url+'" target="_blank" rel="noopener">&#8599; '+g.enc.label+'</a>';
+    }
+    html += '<span class="arrow">&rarr;</span></span>';
+    tag.innerHTML = html;
+    stage.appendChild(tag);
+  });
+}
+render('stage-foncier', foncier);
+render('stage-reg', reg);
+</script>
+</body>
+</html>
