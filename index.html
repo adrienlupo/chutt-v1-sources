@@ -77,6 +77,16 @@
   .pill a.link{font-size:11px; color:#2563eb; text-decoration:none; white-space:nowrap}
   .pill a.link:hover{text-decoration:underline}
   .pill a.link.enc{color:#b45309}
+  .mockwrap{max-width:900px; margin:20px auto 0}
+  .mock-head{font-size:12.5px; font-weight:700; color:#6b7280; margin:0 0 8px; padding-left:2px}
+  .mock-card{background:#fff; border:1.5px dashed #93c5fd; border-radius:12px; padding:14px 18px}
+  .mock-row{display:flex; justify-content:space-between; align-items:center; gap:14px; font-size:15px}
+  .mock-k{font-weight:600}
+  .mock-v{color:#374151}
+  .mock-badge{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; background:#dbeafe; color:#1e40af; padding:2px 7px; border-radius:5px; margin-left:8px; vertical-align:middle}
+  .mock-ann{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; padding-top:12px; border-top:1px solid #f1f5f9}
+  .mock-ann .pill{position:static}
+  .mock-note{font-size:12.5px; color:var(--muted); margin-top:12px; padding-left:2px}
 
   .note{font-size:13.5px; color:var(--muted); margin:10px 2px 0}
   .foot{margin-top:46px; padding:18px 20px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; font-size:14.5px}
@@ -86,48 +96,33 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Périmètre V1 — données fiables, sans jointure de parcelles</h1>
-  <p class="sub">Maquette « Conceptualisation » — 12 Bd du Commandant Robert Thollon, Marseille 13015. Pour chaque champ : statut + source réelle.</p>
-
-  <div class="legend">
-    <span class="key"><span class="dot ok"></span><b>On l'a</b> — donnée directe (point / commune) OU calcul dont toutes les entrées sont disponibles</span>
-    <span class="key"><span class="dot part"></span><b>Partiel</b> — une partie seulement, le reste = encodage règlement</span>
-    <span class="key"><span class="dot user"></span><b>Saisie utilisateur</b> — choix de scénario, ce n'est pas une donnée</span>
-    <span class="key"><span class="dot no"></span><b>On ne l'a pas</b> — calcul/algo, encodage règlement, ou aucune source</span>
-  </div>
-  <div class="counts">
-    <span class="chip ok">15 disponibles (donnée ou calcul complet)</span>
-    <span class="chip part">5 partiels / conditionnels</span>
-    <span class="chip user">5 saisies utilisateur</span>
-    <span class="chip no">11 bloqués</span>
-  </div>
-  <p class="note" style="margin:-14px 0 0">Anatomie d'une pastille : <b>statut</b> › <b>nom de la source</b> › <b>type</b> (API · Open data · Téléch. · Calcul · Encodage · Saisie) › <b>lien</b> cliquable.</p>
+  <h1>Chutt — Périmètre V1 des sources</h1>
 
   <!-- ============ PANEL 1 : FONCIER ============ -->
   <div class="panel-title">1 · Panneau « Informations foncier »</div>
   <div class="stage" id="stage-foncier">
     <img src="foncier.png" alt="Informations foncier">
   </div>
-  <p class="note">Vert = on a toutes les entrées (donnée brute <b>ou</b> calcul complet, source précisée). Bloc <b>Projet futur</b> : la <b>SDP conservée</b> se calcule déjà ; le reste attend 2 verrous — l'<b>encodage du règlement PLUi</b> (hauteur max, retrait, ratio stationnement) et une <b>source de surface de parking</b>. Les % de programme sont une saisie utilisateur (bleu).</p>
 
   <!-- ============ PANEL 2 : REGLEMENTATION ============ -->
   <div class="panel-title">2 · Panneau « Règlementation »</div>
   <div class="stage" id="stage-reg">
     <img src="reglementation.png" alt="Règlementation">
   </div>
-  <p class="note">Bloc <b>Dispositions générales</b> : presque tout via GPU + Géorisques. Bloc <b>Règles d'urbanisme locales</b> : encodage du règlement PLUi (le point dur), encodé <b>une fois par zone</b>. Exception : la <b>hauteur max</b> est une fonction déterministe de la largeur de voie (BD TOPO) une fois la règle de zone encodée — c'est elle qui débloque la cascade du Projet futur.</p>
 
-  <div class="foot" style="border-left:4px solid var(--part); margin-top:30px">
-    <b>Source de l'encodage — exemple Marseille.</b> Les règles marquées <b>ENCODAGE</b> ne viennent d'aucune API : elles sont transcrites du <b>règlement écrit du PLUi Aix-Marseille-Provence</b> (lien-source en ambre sur les pastilles). Chaîne de provenance :
-    <ol style="margin:8px 0 0; padding-left:20px">
-      <li><b>GPU</b> (apicarto) → renvoie le code de zone (<b>UAe3</b>) + le lien direct vers la pièce écrite du règlement.</li>
-      <li><b>Règlement PLUi MAMP</b>, pièce écrite, zone <b>UAe3</b> — <b>Modification n°3 approuvée le 18/04/2024</b> : c'est le document réellement encodé (hauteur 16/22/25 m selon la voie, retrait, stationnement…).</li>
-      <li><b>Encodage</b> = extraction LLM + validation humaine, une fois par zone, avec le lien GPU ancré sur la page exacte.</li>
-    </ol>
-  </div>
-
-  <div class="foot">
-    <b>En une phrase :</b> la V1 garde « l'Existant foncier + le contexte réglementaire par couches officielles ». Disparaissent intégralement le bloc <b>Projet futur</b> (algo), le bloc <b>Règles d'urbanisme locales</b> (encodage règlement), et 5 champs ponctuels : surface de stationnement, taux d'imperméabilisation, propriétaire particulier, % termites, OPAH/PIG.
+  <div class="mockwrap">
+    <div class="mock-head">Panneau Réglementation › bloc « Informations contextuelles » — nouvelle ligne proposée</div>
+    <div class="mock-card">
+      <div class="mock-row">
+        <span class="mock-k">Précédents de permis <span class="mock-badge">à ajouter au proto</span></span>
+        <span class="mock-v">Permis de construire / DP du secteur</span>
+      </div>
+      <div class="mock-ann">
+        <span class="pill ok"><span class="ico">✓</span><span class="name">Sitadel3 — au quartier</span><span class="chev">&rsaquo;</span><span class="type data">Open data</span><span class="chev">&rsaquo;</span><a class="link" href="https://www.statistiques.developpement-durable.gouv.fr/donnees-des-permis-de-construire-et-autres-autorisations-durbanisme" target="_blank" rel="noopener">&#8599; statistiques.developpement-durable.gouv.fr</a></span>
+        <span class="pill part"><span class="ico">~</span><span class="name">Sogefi API ADS — à la parcelle</span><span class="chev">&rsaquo;</span><span class="type api">API · ~300-800 €/an</span><span class="chev">&rsaquo;</span><a class="link" href="https://www.sogefi-sig.com/geoservices-apis-wms/api-ads-autorisation-du-droit-des-sols/" target="_blank" rel="noopener">&#8599; sogefi-sig.com</a></span>
+      </div>
+      <div class="mock-note">Sitadel : rattaché par <b>adresse</b> (géocodage) → fiable au quartier · Sogefi : par <b>référence cadastrale</b> → fiable à la parcelle (API payante, ~300-800 €/an).</div>
+    </div>
   </div>
 </div>
 
