@@ -5,36 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chutt — Périmètre V1 : ce qu'on affiche / ce qu'on n'affiche pas</title>
 <style>
-  :root{
-    --ok:#16a34a; --no:#dc2626; --part:#d97706; --user:#2563eb;
-    --ink:#1a1a1a; --muted:#6b7280;
-  }
+  :root{ --ok:#16a34a; --no:#dc2626; --part:#d97706; --user:#2563eb; --ink:#1a1a1a; --muted:#6b7280; }
   *{box-sizing:border-box}
-  body{
-    margin:0; background:#f3f4f6; color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.45;
-  }
+  body{ margin:0; background:#f3f4f6; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.45; }
   .wrap{max-width:1240px; margin:0 auto; padding:32px 20px 80px}
   h1{font-size:26px; margin:0 0 6px}
-  .sub{color:var(--muted); margin:0 0 24px; font-size:15px}
+  .sub{color:var(--muted); margin:0 0 20px; font-size:15px}
 
-  .legend{
-    display:flex; flex-wrap:wrap; gap:18px; align-items:center;
-    background:#fff; border:1px solid #e5e7eb; border-radius:12px;
-    padding:14px 18px; margin-bottom:14px; font-size:14px;
-  }
-  .legend b{font-weight:600}
+  .legend{display:flex; flex-wrap:wrap; gap:18px; align-items:center; background:#fff; border:1px solid #e5e7eb;
+    border-radius:12px; padding:12px 18px; margin-bottom:8px; font-size:14px;}
   .key{display:inline-flex; align-items:center; gap:8px}
   .dot{width:14px; height:14px; border-radius:4px; flex:0 0 auto}
   .dot.ok{background:var(--ok)} .dot.no{background:var(--no)} .dot.part{background:var(--part)} .dot.user{background:var(--user)}
-
-  .counts{display:flex; gap:10px; flex-wrap:wrap; margin:0 0 26px}
-  .chip{font-size:13px; padding:6px 12px; border-radius:999px; font-weight:600}
-  .chip.ok{background:#dcfce7; color:#166534}
-  .chip.no{background:#fee2e2; color:#991b1b}
-  .chip.part{background:#fef3c7; color:#92400e}
-  .chip.user{background:#dbeafe; color:#1e40af}
 
   .panel-title{font-size:18px; font-weight:700; margin:34px 0 12px}
 
@@ -42,61 +25,69 @@
   .stage img{width:100%; display:block}
 
   /* highlight band over the panel rows */
-  .band{position:absolute; height:2.7%; border-radius:5px; pointer-events:none}
+  .band{position:absolute; border-radius:5px; pointer-events:none}
   .band.ok{background:rgba(22,163,74,.20); box-shadow:inset 4px 0 0 var(--ok)}
   .band.no{background:rgba(220,38,38,.20); box-shadow:inset 4px 0 0 var(--no)}
   .band.part{background:rgba(217,119,6,.22); box-shadow:inset 4px 0 0 var(--part)}
   .band.user{background:rgba(37,99,235,.16); box-shadow:inset 4px 0 0 var(--user)}
+  .band.faint{opacity:.45}
 
-  /* source tag floating in the empty map area, to the left of the panel */
-  .tag{position:absolute; transform:translateY(-50%); text-align:right; left:2%; }
-  .pill{
-    display:inline-flex; align-items:center; gap:7px;
-    background:#fff; border:1px solid #e5e7eb;
-    border-radius:999px; padding:4px 11px 4px 9px;
-    font-size:12.5px; box-shadow:0 1px 3px rgba(0,0,0,.10);
-    white-space:nowrap; max-width:100%;
-  }
+  /* numbered marker on the band */
+  .marker{position:absolute; transform:translate(-50%,-50%); width:21px; height:21px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:#fff;
+    border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.30); z-index:3}
+  .marker.ok{background:var(--ok)} .marker.no{background:var(--no)} .marker.part{background:var(--part)} .marker.user{background:var(--user)}
+
+  /* index list in the empty map area */
+  .idxlist{position:absolute; left:2.5%; top:26.5%; width:59%; display:flex; flex-direction:column; gap:6px; z-index:2}
+  .idxrow{display:flex; align-items:center; gap:8px}
+  .num{display:inline-flex; align-items:center; justify-content:center; width:19px; height:19px; border-radius:50%;
+    font-size:10.5px; font-weight:800; color:#fff; flex:0 0 auto}
+  .num.ok{background:var(--ok)} .num.no{background:var(--no)} .num.part{background:var(--part)} .num.user{background:var(--user)}
+
+  /* pill */
+  .pill{display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid #e5e7eb;
+    border-radius:999px; padding:4px 11px 4px 9px; font-size:12.5px; box-shadow:0 1px 3px rgba(0,0,0,.10);}
+  .idxrow .pill{white-space:normal}
   .pill .ico{font-weight:800; font-size:13px; line-height:1}
   .pill.ok{border-color:#bbf7d0} .pill.ok .ico{color:var(--ok)}
   .pill.no{border-color:#fecaca} .pill.no .ico{color:var(--no)}
   .pill.part{border-color:#fde68a} .pill.part .ico{color:var(--part)}
   .pill.user{border-color:#bfdbfe} .pill.user .ico{color:var(--user)}
-  .pill .src{font-weight:600}
-  .pill .arrow{color:#cbd5e1; font-weight:700}
   .pill .name{font-weight:600}
   .pill .chev{color:#cbd5e1; font-weight:700; margin:0 1px}
-  .pill .type{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px;
-    padding:1px 6px; border-radius:5px; background:#eef2f7; color:#475569; white-space:nowrap}
-  .pill .type.api{background:#dbeafe; color:#1e40af}
-  .pill .type.data{background:#d1fae5; color:#065f46}
-  .pill .type.calc{background:#e5e7eb; color:#374151}
-  .pill .type.enc{background:#fef3c7; color:#92400e}
-  .pill .type.saisie{background:#dbeafe; color:#1e40af}
-  .pill .type.none{background:#fee2e2; color:#991b1b}
-  .pill a.link{font-size:11px; color:#2563eb; text-decoration:none; white-space:nowrap}
-  .pill a.link:hover{text-decoration:underline}
-  .pill a.link.enc{color:#b45309}
-  .mockwrap{max-width:900px; margin:20px auto 0}
+  .type{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; padding:1px 6px;
+    border-radius:5px; background:#eef2f7; color:#475569; white-space:nowrap}
+  .type.api{background:#dbeafe; color:#1e40af} .type.data{background:#d1fae5; color:#065f46}
+  .type.calc{background:#e5e7eb; color:#374151} .type.enc{background:#fef3c7; color:#92400e}
+  .type.saisie{background:#dbeafe; color:#1e40af} .type.none{background:#fee2e2; color:#991b1b}
+  a.link{font-size:11px; color:#2563eb; text-decoration:none; white-space:nowrap} a.link:hover{text-decoration:underline}
+  a.link.enc{color:#b45309}
+
+  /* mock proposed row */
+  .mockwrap{max-width:900px; margin:24px auto 0}
   .mock-head{font-size:12.5px; font-weight:700; color:#6b7280; margin:0 0 8px; padding-left:2px}
   .mock-card{background:#fff; border:1.5px dashed #93c5fd; border-radius:12px; padding:14px 18px}
   .mock-row{display:flex; justify-content:space-between; align-items:center; gap:14px; font-size:15px}
   .mock-k{font-weight:600}
   .mock-v{color:#374151}
-  .mock-badge{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; background:#dbeafe; color:#1e40af; padding:2px 7px; border-radius:5px; margin-left:8px; vertical-align:middle}
+  .mock-badge{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; background:#dbeafe;
+    color:#1e40af; padding:2px 7px; border-radius:5px; margin-left:8px; vertical-align:middle}
   .mock-ann{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; padding-top:12px; border-top:1px solid #f1f5f9}
-  .mock-ann .pill{position:static}
   .mock-note{font-size:12.5px; color:var(--muted); margin-top:12px; padding-left:2px}
-
-  .note{font-size:13.5px; color:var(--muted); margin:10px 2px 0}
-  .foot{margin-top:46px; padding:18px 20px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; font-size:14.5px}
-  .foot b{font-weight:600}
-  @media(max-width:760px){ .pill{font-size:10px; padding:3px 7px} .tag{left:1%} }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Chutt — Périmètre V1 des sources</h1>
+  <p class="sub">Chaque ligne des panneaux est numérotée ; la source correspondante est listée à gauche, dans la carte.</p>
+
+  <div class="legend">
+    <span class="key"><span class="dot ok"></span> Source disponible</span>
+    <span class="key"><span class="dot part"></span> Partiel / à compléter</span>
+    <span class="key"><span class="dot no"></span> Absent / à encoder</span>
+    <span class="key"><span class="dot user"></span> Saisie utilisateur</span>
+  </div>
 
   <!-- ============ PANEL 1 : FONCIER ============ -->
   <div class="panel-title">1 · Panneau « Informations foncier »</div>
@@ -127,49 +118,43 @@
 </div>
 
 <script>
-/* top = position verticale du centre de la ligne, en % de la hauteur de l'image */
 const PANEL = { left:63.8, width:27.0 };
 
-/* URLs des sources */
-const CAD='https://apicarto.ign.fr/api/doc/cadastre',
-      BAN='https://api-adresse.data.gouv.fr',
-      GEO='https://geo.api.gouv.fr',
-      BDNB='https://api.bdnb.io/v1/bdnb',
-      GPU='https://apicarto.ign.fr/api/doc/gpu',
-      RISK='https://www.georisques.gouv.fr/doc-api',
-      BDTOPO='https://geoservices.ign.fr/bdtopo',
-      DGFIP='https://www.data.gouv.fr/datasets/fichiers-des-locaux-et-des-parcelles-des-personnes-morales',
-      PLUI='https://plui.ampmetropole.fr',
-      QPV='https://www.data.gouv.fr/datasets/quartiers-prioritaires-de-la-politique-de-la-ville-qpv',
-      ABC='https://www.data.gouv.fr/datasets/liste-des-communes-selon-le-zonage-abc',
-      SRU='https://www.data.gouv.fr/datasets/communes-et-inventaire-sru';
+const CAD='https://apicarto.ign.fr/api/doc/cadastre', BAN='https://api-adresse.data.gouv.fr',
+  GEO='https://geo.api.gouv.fr', BDNB='https://api.bdnb.io/v1/bdnb', GPU='https://apicarto.ign.fr/api/doc/gpu',
+  RISK='https://www.georisques.gouv.fr/doc-api', BDTOPO='https://geoservices.ign.fr/bdtopo',
+  DGFIP='https://www.data.gouv.fr/datasets/fichiers-des-locaux-et-des-parcelles-des-personnes-morales',
+  PLUI='https://plui.ampmetropole.fr',
+  QPV='https://www.data.gouv.fr/datasets/quartiers-prioritaires-de-la-politique-de-la-ville-qpv',
+  ABC='https://www.data.gouv.fr/datasets/liste-des-communes-selon-le-zonage-abc',
+  SRU='https://www.data.gouv.fr/datasets/communes-et-inventaire-sru';
 
 /* Source réellement encodée (exemple Marseille) : règlement écrit du PLUi MAMP, zone UAe3 */
 const ENC = { url: PLUI, label: 'Règlement PLUi MAMP' };
 
 const foncier = [
   // --- Existant ---
-  {top:29.2, st:'ok',   name:'API Géo (commune INSEE)',            type:'API',           url:GEO},
-  {top:32.2, st:'ok',   name:'API Carto Cadastre',                 type:'API',           url:CAD},
-  {top:35.2, st:'ok',   name:'API Adresse (BAN)',                  type:'API',           url:BAN},
-  {top:38.2, st:'ok',   name:'API Carto Cadastre',                 type:'API',           url:CAD},
-  {top:41.2, st:'ok',   name:'BDNB (CSTB)',                        type:'API · gratuit · 10k/mois', url:BDNB},
-  {top:44.2, st:'no',   name:'Parking non distingué',              type:'Aucune source', url:null},
-  {top:47.2, st:'ok',   name:'Calcul : BD TOPO + OCS GE ÷ parcelle', type:'Calcul',      url:null},
-  {top:50.3, st:'ok',   name:'BDNB (CSTB)',                        type:'API · gratuit · 10k/mois', url:BDNB},
-  {top:53.6, st:'part', name:'DGFiP personnes morales (sociétés seules)', type:'Téléch.', url:DGFIP},
+  {top:29.2, st:'ok',   name:'API Géo (commune INSEE)',              type:'API',           url:GEO},
+  {top:32.2, st:'ok',   name:'API Carto Cadastre',                   type:'API',           url:CAD},
+  {top:35.2, st:'ok',   name:'API Adresse (BAN)',                    type:'API',           url:BAN},
+  {top:38.2, st:'ok',   name:'API Carto Cadastre',                   type:'API',           url:CAD},
+  {top:41.2, st:'ok',   name:'BDNB (CSTB)',                          type:'API · gratuit · 10k/mois', url:BDNB},
+  {top:44.2, st:'no',   name:'Parking non distingué',                type:'Aucune source', url:null},
+  {top:47.2, st:'ok',   name:'Calcul : BD TOPO + OCS GE ÷ parcelle', type:'Calcul',        url:null},
+  {top:50.3, st:'ok',   name:'BDNB (CSTB)',                          type:'API · gratuit · 10k/mois', url:BDNB},
+  {top:53.6, st:'part', name:'DGFiP personnes morales (sociétés seules)', type:'Téléch.',  url:DGFIP},
   // --- Projet futur ---
-  {top:63.6, st:'ok',   name:'Calcul : BDNB + emprise BD TOPO',    type:'Calcul',        url:null},
-  {top:66.6, st:'no',   name:'Hauteur max PLUi requise',           type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
-  {top:69.6, st:'no',   name:'Parking non sourcé',                 type:'Aucune source', url:null},
-  {top:72.6, st:'no',   name:'Hauteur max PLUi requise',           type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
-  {top:75.7, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
-  {top:78.0, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
-  {top:80.3, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
-  {top:82.5, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
-  {top:84.8, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
-  {top:87.8, st:'no',   name:'Cascade SDP + ratio PLUi',           type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
-  {top:90.8, st:'part', name:'Dépend du projet simulé',            type:'Calcul',        url:null},
+  {top:63.6, st:'ok',   name:'Calcul : BDNB + emprise BD TOPO',      type:'Calcul',        url:null},
+  {top:66.6, st:'part', name:'Hauteur max PLUi requise',             type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:69.6, st:'no',   name:'Parking non sourcé',                   type:'Aucune source', url:null},
+  {top:72.6, st:'part', name:'Hauteur max PLUi requise',             type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:75.7, st:'user', name:'Scénario de programme',                type:'Saisie',        url:null},
+  {top:78.0, st:'user', name:'Scénario de programme',                type:'Saisie',        url:null},
+  {top:80.3, st:'user', name:'Scénario de programme',                type:'Saisie',        url:null},
+  {top:82.5, st:'user', name:'Scénario de programme',                type:'Saisie',        url:null},
+  {top:84.8, st:'user', name:'Scénario de programme',                type:'Saisie',        url:null},
+  {top:87.8, st:'part', name:'Cascade SDP + ratio PLUi',             type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:90.8, st:'part', name:'Dépend du projet simulé',              type:'Calcul',        url:null},
 ];
 
 const reg = [
@@ -183,11 +168,11 @@ const reg = [
   // --- Règles d'urbanisme locales ---
   {top:55.7, st:'part', name:'Largeur de voie + règle de zone',    type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
   {top:58.8, st:'no',   name:'COS supprimé 2014',                  type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
-  {top:61.7, st:'no',   name:'Retrait',                            type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:61.7, st:'part', name:'Retrait',                            type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
   {top:65.3, st:'part', name:'Zone OK · mixité à encoder',         type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
   {top:69.2, st:'part', name:'SRU OK · 50%/parcelle à encoder',    type:'Open data › Encodage PLUi local', url:SRU, enc:ENC},
-  {top:72.2, st:'no',   name:'Stationnement',                      type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
-  {top:75.3, st:'no',   name:'Aspect extérieur',                   type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:72.2, st:'part', name:'Stationnement',                      type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:75.3, st:'part', name:'Aspect extérieur',                   type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
   // --- Informations contextuelles ---
   {top:86.0, st:'ok',   name:'Périmètres QPV (ANCT)',              type:'Open data',     url:QPV},
   {top:89.3, st:'ok',   name:'Zonage ABC',                         type:'Open data',     url:ABC},
@@ -205,57 +190,51 @@ function typeClass(t){
   return 'data';
 }
 function domain(u){ try{ return new URL(u).hostname.replace(/^www\./,''); }catch(e){ return u; } }
-
-/* fusionne les lignes consécutives identiques (statut + source + type + liens) */
-function keyOf(r){ return [r.st, r.name, r.type, r.url, r.urlLabel||'', r.enc?r.enc.url:''].join('|'); }
+function keyOf(r){ return [r.st,r.name,r.type,r.url,r.enc?r.enc.url:''].join('|'); }
 function mergeRows(rows){
-  const groups = [];
-  rows.forEach(r=>{
-    const last = groups[groups.length-1];
-    if(last && last.key===keyOf(r)){
-      last.tops.push(r.top);
-    } else {
-      groups.push({...r, key:keyOf(r), tops:[r.top]});
-    }
+  const g=[];
+  rows.forEach(r=>{ const last=g[g.length-1];
+    if(last && last.key===keyOf(r)){ last.tops.push(r.top); }
+    else g.push({...r, key:keyOf(r), tops:[r.top]});
   });
-  return groups;
+  return g;
+}
+function center(g){ return (Math.min(...g.tops)+Math.max(...g.tops))/2; }
+function typesHTML(g){
+  return g.type.split(' › ').map(t=>'<span class="type '+typeClass(t)+'">'+t+'</span>').join('<span class="chev">&rsaquo;</span>');
+}
+function linkHTML(g){
+  let h='';
+  if(g.url) h+='<span class="chev">&rsaquo;</span><a class="link" href="'+g.url+'" target="_blank" rel="noopener">&#8599; '+domain(g.url)+'</a>';
+  if(g.enc) h+='<span class="chev">&rsaquo;</span><a class="link enc" href="'+g.enc.url+'" target="_blank" rel="noopener">&#8599; '+g.enc.label+'</a>';
+  return h;
+}
+function pillMarkup(g){
+  return '<span class="pill '+g.st+'"><span class="ico">'+ICON[g.st]+'</span><span class="name">'+g.name+'</span>'+
+    '<span class="chev">&rsaquo;</span>'+typesHTML(g)+linkHTML(g)+'</span>';
 }
 
 function render(stageId, rows){
   const stage = document.getElementById(stageId);
-  mergeRows(rows).forEach(g=>{
-    const min = Math.min(...g.tops), max = Math.max(...g.tops);
-    const center = (min+max)/2;
-
-    const band = document.createElement('div');
-    band.className = 'band '+g.st;
-    band.style.top = (min-1.35)+'%';
-    band.style.height = ((max-min)+2.7)+'%';
-    band.style.left = PANEL.left+'%';
-    band.style.width = PANEL.width+'%';
+  const list = document.createElement('div'); list.className='idxlist';
+  mergeRows(rows).forEach((g,i)=>{
+    const min=Math.min(...g.tops), max=Math.max(...g.tops);
+    const band=document.createElement('div');
+    band.className='band faint '+g.st;
+    band.style.top=(min-1.35)+'%'; band.style.height=((max-min)+2.7)+'%';
+    band.style.left=PANEL.left+'%'; band.style.width=PANEL.width+'%';
     stage.appendChild(band);
 
-    const tag = document.createElement('div');
-    tag.className = 'tag';
-    tag.style.top = center+'%';
-    tag.style.right = (100-PANEL.left+0.8)+'%';
-    let html = '<span class="pill '+g.st+'">'+
-        '<span class="ico">'+ICON[g.st]+'</span>'+
-        '<span class="name">'+g.name+'</span>'+
-        '<span class="chev">&rsaquo;</span>'+
-        g.type.split(' › ').map(function(t){return '<span class="type '+typeClass(t)+'">'+t+'</span>';}).join('<span class="chev">&rsaquo;</span>');
-    if(g.url){
-      html += '<span class="chev">&rsaquo;</span>'+
-              '<a class="link" href="'+g.url+'" target="_blank" rel="noopener">&#8599; '+(g.urlLabel||domain(g.url))+'</a>';
-    }
-    if(g.enc){
-      html += '<span class="chev">&rsaquo;</span>'+
-              '<a class="link enc" href="'+g.enc.url+'" target="_blank" rel="noopener">&#8599; '+g.enc.label+'</a>';
-    }
-    html += '<span class="arrow">&rarr;</span></span>';
-    tag.innerHTML = html;
-    stage.appendChild(tag);
+    const marker=document.createElement('div');
+    marker.className='marker '+g.st;
+    marker.style.top=center(g)+'%'; marker.style.left=PANEL.left+'%'; marker.textContent=i+1;
+    stage.appendChild(marker);
+
+    const row=document.createElement('div'); row.className='idxrow';
+    row.innerHTML='<span class="num '+g.st+'">'+(i+1)+'</span>'+pillMarkup(g);
+    list.appendChild(row);
   });
+  stage.appendChild(list);
 }
 render('stage-foncier', foncier);
 render('stage-reg', reg);
