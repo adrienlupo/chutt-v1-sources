@@ -145,7 +145,7 @@ const CAD='https://apicarto.ign.fr/api/doc/cadastre',
       SRU='https://www.data.gouv.fr/datasets/communes-et-inventaire-sru';
 
 /* Source réellement encodée (exemple Marseille) : règlement écrit du PLUi MAMP, zone UAe3 */
-const ENC = { url: PLUI, label: 'Règlement PLUi MAMP (UAe3)' };
+const ENC = { url: PLUI, label: 'Règlement PLUi MAMP' };
 
 const foncier = [
   // --- Existant ---
@@ -160,15 +160,15 @@ const foncier = [
   {top:53.6, st:'part', name:'DGFiP personnes morales (sociétés seules)', type:'Téléch.', url:DGFIP},
   // --- Projet futur ---
   {top:63.6, st:'ok',   name:'Calcul : BDNB + emprise BD TOPO',    type:'Calcul',        url:null},
-  {top:66.6, st:'no',   name:'Hauteur max PLUi requise',           type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
+  {top:66.6, st:'no',   name:'Hauteur max PLUi requise',           type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
   {top:69.6, st:'no',   name:'Parking non sourcé',                 type:'Aucune source', url:null},
-  {top:72.6, st:'no',   name:'Hauteur max PLUi requise',           type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
+  {top:72.6, st:'no',   name:'Hauteur max PLUi requise',           type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
   {top:75.7, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
   {top:78.0, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
   {top:80.3, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
   {top:82.5, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
   {top:84.8, st:'user', name:'Scénario de programme',              type:'Saisie',        url:null},
-  {top:87.8, st:'no',   name:'Cascade SDP + ratio PLUi',           type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
+  {top:87.8, st:'no',   name:'Cascade SDP + ratio PLUi',           type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
   {top:90.8, st:'part', name:'Dépend du projet simulé',            type:'Calcul',        url:null},
 ];
 
@@ -181,13 +181,13 @@ const reg = [
   {top:42.4, st:'ok',   name:'API Géorisques',                     type:'API',           url:RISK},
   {top:45.7, st:'ok',   name:'API Carto GPU (SUP)',                type:'API',           url:GPU},
   // --- Règles d'urbanisme locales ---
-  {top:55.7, st:'part', name:'Largeur de voie + règle de zone',    type:'API GPU › Encodage PLUi local', url:BDTOPO, enc:ENC},
-  {top:58.8, st:'no',   name:'Règlement (COS supprimé 2014)',      type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
-  {top:61.7, st:'no',   name:'Règlement PLUi',                     type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
-  {top:65.3, st:'part', name:'Zone GPU OK · mixité à encoder',     type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
+  {top:55.7, st:'part', name:'Largeur de voie + règle de zone',    type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:58.8, st:'no',   name:'COS supprimé 2014',                  type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:61.7, st:'no',   name:'Retrait',                            type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:65.3, st:'part', name:'Zone OK · mixité à encoder',         type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
   {top:69.2, st:'part', name:'SRU OK · 50%/parcelle à encoder',    type:'Open data › Encodage PLUi local', url:SRU, enc:ENC},
-  {top:72.2, st:'no',   name:'Règlement PLUi',                     type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
-  {top:75.3, st:'no',   name:'Règlement PLUi',                     type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
+  {top:72.2, st:'no',   name:'Stationnement',                      type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
+  {top:75.3, st:'no',   name:'Aspect extérieur',                   type:'API GPU › Encodage PLUi local', url:null, enc:ENC},
   // --- Informations contextuelles ---
   {top:86.0, st:'ok',   name:'Périmètres QPV (ANCT)',              type:'Open data',     url:QPV},
   {top:89.3, st:'ok',   name:'Zonage ABC',                         type:'Open data',     url:ABC},
