@@ -87,8 +87,6 @@
   .mock-ann{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; padding-top:12px; border-top:1px solid #f1f5f9}
   .mock-ann .pill{position:static}
   .mock-note{font-size:12.5px; color:var(--muted); margin-top:12px; padding-left:2px}
-  .scope{background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px 16px; font-size:13.5px; margin-top:14px}
-  .scope b{font-weight:600}
 
   .note{font-size:13.5px; color:var(--muted); margin:10px 2px 0}
   .foot{margin-top:46px; padding:18px 20px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; font-size:14.5px}
@@ -110,10 +108,6 @@
   <div class="panel-title">2 · Panneau « Règlementation »</div>
   <div class="stage" id="stage-reg">
     <img src="reglementation.png" alt="Règlementation">
-  </div>
-
-  <div class="scope">
-    <b>API GPU (IGN) — couverture nationale.</b> La chaîne adresse → zone PLU/PLUi → lien du règlement fonctionne partout où le document est publié sur le Géoportail de l'urbanisme (≈ tout le territoire), pas seulement à Marseille/Provence. Testé : <b>5 Bd de Paris → UAe3</b>, + lien direct du règlement (<code>urlfic</code>). Seul l'<b>encodage du texte des règles</b> (hauteur, retrait, stationnement…) reste un travail local, à refaire par zone / PLUi.
   </div>
 
   <div class="mockwrap">
@@ -140,7 +134,7 @@ const PANEL = { left:63.8, width:27.0 };
 const CAD='https://apicarto.ign.fr/api/doc/cadastre',
       BAN='https://api-adresse.data.gouv.fr',
       GEO='https://geo.api.gouv.fr',
-      BDNB='https://www.bdnb.io',
+      BDNB='https://api.bdnb.io/v1/bdnb',
       GPU='https://apicarto.ign.fr/api/doc/gpu',
       RISK='https://www.georisques.gouv.fr/doc-api',
       BDTOPO='https://geoservices.ign.fr/bdtopo',
@@ -159,10 +153,10 @@ const foncier = [
   {top:32.2, st:'ok',   name:'API Carto Cadastre',                 type:'API',           url:CAD},
   {top:35.2, st:'ok',   name:'API Adresse (BAN)',                  type:'API',           url:BAN},
   {top:38.2, st:'ok',   name:'API Carto Cadastre',                 type:'API',           url:CAD},
-  {top:41.2, st:'ok',   name:'BDNB (CSTB)',                        type:'Open data',     url:BDNB},
+  {top:41.2, st:'ok',   name:'BDNB (CSTB)',                        type:'API · gratuit · 10k/mois', url:BDNB},
   {top:44.2, st:'no',   name:'Parking non distingué',              type:'Aucune source', url:null},
   {top:47.2, st:'ok',   name:'Calcul : BD TOPO + OCS GE ÷ parcelle', type:'Calcul',      url:null},
-  {top:50.3, st:'ok',   name:'BDNB (CSTB)',                        type:'Open data',     url:BDNB},
+  {top:50.3, st:'ok',   name:'BDNB (CSTB)',                        type:'API · gratuit · 10k/mois', url:BDNB},
   {top:53.6, st:'part', name:'DGFiP personnes morales (sociétés seules)', type:'Téléch.', url:DGFIP},
   // --- Projet futur ---
   {top:63.6, st:'ok',   name:'Calcul : BDNB + emprise BD TOPO',    type:'Calcul',        url:null},
@@ -187,13 +181,13 @@ const reg = [
   {top:42.4, st:'ok',   name:'API Géorisques',                     type:'API',           url:RISK},
   {top:45.7, st:'ok',   name:'API Carto GPU (SUP)',                type:'API',           url:GPU},
   // --- Règles d'urbanisme locales ---
-  {top:55.7, st:'part', name:'Largeur de voie + règle de zone',    type:'BD TOPO + Encodage', url:BDTOPO, enc:ENC},
-  {top:58.8, st:'no',   name:'Règlement (COS supprimé 2014)',      type:'Encodage',      url:null, enc:ENC},
-  {top:61.7, st:'no',   name:'Règlement PLUi',                     type:'Encodage',      url:null, enc:ENC},
-  {top:65.3, st:'part', name:'Zone GPU OK · mixité à encoder',     type:'API + Encodage', url:GPU, enc:ENC},
-  {top:69.2, st:'part', name:'SRU OK · 50%/parcelle à encoder',    type:'Open data + Encodage', url:SRU, enc:ENC},
-  {top:72.2, st:'no',   name:'Règlement PLUi',                     type:'Encodage',      url:null, enc:ENC},
-  {top:75.3, st:'no',   name:'Règlement PLUi',                     type:'Encodage',      url:null, enc:ENC},
+  {top:55.7, st:'part', name:'Largeur de voie + règle de zone',    type:'API GPU › Encodage PLUi local', url:BDTOPO, enc:ENC},
+  {top:58.8, st:'no',   name:'Règlement (COS supprimé 2014)',      type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
+  {top:61.7, st:'no',   name:'Règlement PLUi',                     type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
+  {top:65.3, st:'part', name:'Zone GPU OK · mixité à encoder',     type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
+  {top:69.2, st:'part', name:'SRU OK · 50%/parcelle à encoder',    type:'Open data › Encodage PLUi local', url:SRU, enc:ENC},
+  {top:72.2, st:'no',   name:'Règlement PLUi',                     type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
+  {top:75.3, st:'no',   name:'Règlement PLUi',                     type:'API GPU › Encodage PLUi local', url:GPU, enc:ENC},
   // --- Informations contextuelles ---
   {top:86.0, st:'ok',   name:'Périmètres QPV (ANCT)',              type:'Open data',     url:QPV},
   {top:89.3, st:'ok',   name:'Zonage ABC',                         type:'Open data',     url:ABC},
@@ -249,7 +243,7 @@ function render(stageId, rows){
         '<span class="ico">'+ICON[g.st]+'</span>'+
         '<span class="name">'+g.name+'</span>'+
         '<span class="chev">&rsaquo;</span>'+
-        '<span class="type '+typeClass(g.type)+'">'+g.type+'</span>';
+        g.type.split(' › ').map(function(t){return '<span class="type '+typeClass(t)+'">'+t+'</span>';}).join('<span class="chev">&rsaquo;</span>');
     if(g.url){
       html += '<span class="chev">&rsaquo;</span>'+
               '<a class="link" href="'+g.url+'" target="_blank" rel="noopener">&#8599; '+(g.urlLabel||domain(g.url))+'</a>';
